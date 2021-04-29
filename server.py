@@ -37,18 +37,17 @@ def deposit(current_info, money, current_account):
     current_balance = current_info[2]
     current_balance += money
     current_account.update_balance(current_balance)
-    answer = "Successfully Deposited " + str(money) + " Into Your Bank Account."
+    answer = "Successfully deposited " + str(money) + "$."
     return str(answer)
 
 def withdraw(current_info, money, current_account):
     current_balance = current_info[2]
-    print("current balance dagon:", current_balance)
     if current_balance >= money:
         current_balance -= money
         current_account.update_balance(current_balance)
         return "Successfully Withdrew " + str(money) + " From Your Bank Account."
     else:
-        return "Oops, Insufficient Balance in Your Account, Withdrawal Failed."
+        return "Oops, There is not balance in your account, Withdrawal failed."
 
 
 # The function receives a connection, address and the index in all_connections,
@@ -155,80 +154,78 @@ class accounts:
             print("Error!")
 
 
-def Handle_Client(conn, address):
+def Handle_Client(conn):
     current_account = accounts("", "")
-    while True:
-        try:
+    try:
+        while True:
             data = conn.recv(1024).decode('utf-8')
-        except ConnectionResetError:
-            return
-        print("DATA IS:", data)
-        if data.lower() == "login":
-            if current_account.getUsername() != "":
-                conn.send(bytes("You can't do it right now", 'utf-8'))
-            else:
-                conn.send(bytes("Enter username", 'utf-8'))
-                username = conn.recv(1024).decode('utf-8')
-                conn.send(bytes("Enter password", 'utf-8'))
-                password = conn.recv(1024).decode('utf-8')
-                current_account = accounts(username, password)
-                answer = current_account.login_user(username, password)
-                conn.send(bytes(answer, 'utf-8'))
-        elif data.lower() == "register":
-            if current_account.getUsername() != "":
-                conn.send(bytes("You can't do it right now", 'utf-8'))
-            else:
-                conn.send(bytes("Enter username", 'utf-8'))
-                username = conn.recv(1024).decode('utf-8')
-                conn.send(bytes("Enter password", 'utf-8'))
-                password = conn.recv(1024).decode('utf-8')
-                conn.send(bytes("Enter pincode", 'utf-8'))
-                pincode = conn.recv(1024).decode('utf-8')
-                answer = add_user(username, password, pincode)
-                conn.send(bytes(answer, 'utf-8'))
-        elif data == "deposit":
-            if current_account.getUsername() == "":
-                conn.send(bytes("Error! Not connected to an account", 'utf-8'))
-            else:
-                conn.send(bytes("Enter pin", 'utf-8'))
-                pin = conn.recv(1024).decode('utf-8')
-                if pin.isdigit() and current_account.check_pin(int(pin)):
-                    conn.send(bytes("Enter amount to deposit", 'utf-8'))
-                    to_deposit = conn.recv(1024).decode('utf-8')
-                    if to_deposit.isdigit():
-                        answer = deposit(current_account.get_balance(), float(to_deposit), current_account)
-                    else:
-                        answer = "Oops, Invalid input"
-                    conn.send(bytes(answer, 'utf-8'))
+            if data.lower() == "login":
+                if current_account.getUsername() != "":
+                    conn.send(bytes("You can't do it right now", 'utf-8'))
                 else:
-                    conn.send(bytes("Oops, Incorrect pin!", 'utf-8'))
-        elif data.lower() == "withdraw":
-            if current_account.getUsername() == "":
-                conn.send(bytes("Error! Not connected to an account", 'utf-8'))
-            else:
-                conn.send(bytes("Enter pin", 'utf-8'))
-                pin = conn.recv(1024).decode('utf-8')
-                if pin.isdigit() and current_account.check_pin(int(pin)):
-                    conn.send(bytes("Enter amount to withdraw", 'utf-8'))
-                    to_withdraw = conn.recv(1024).decode('utf-8')
-                    if to_withdraw.isdigit():
-                        answer = withdraw(current_account.get_balance(), float(to_withdraw), current_account)
-                    else:
-                        answer = "Oops, Invalid input"
+                    conn.send(bytes("Enter username", 'utf-8'))
+                    username = conn.recv(1024).decode('utf-8')
+                    conn.send(bytes("Enter password", 'utf-8'))
+                    password = conn.recv(1024).decode('utf-8')
+                    current_account = accounts(username, password)
+                    answer = current_account.login_user(username, password)
                     conn.send(bytes(answer, 'utf-8'))
+            elif data.lower() == "register":
+                if current_account.getUsername() != "":
+                    conn.send(bytes("You can't do it right now", 'utf-8'))
                 else:
-                    conn.send(bytes("Oops, Incorrect pin!", 'utf-8'))
-        elif data.lower() == "balance":
-            conn.send(bytes(str(current_account.get_balance()[2]), 'utf-8'))
-        elif data.lower() == "disconnect":
-            if current_account.getUsername() == "":
-                conn.send(bytes("Error! Not connected to an account", 'utf-8'))
+                    conn.send(bytes("Enter username", 'utf-8'))
+                    username = conn.recv(1024).decode('utf-8')
+                    conn.send(bytes("Enter password", 'utf-8'))
+                    password = conn.recv(1024).decode('utf-8')
+                    conn.send(bytes("Enter pincode", 'utf-8'))
+                    pincode = conn.recv(1024).decode('utf-8')
+                    answer = add_user(username, password, pincode)
+                    conn.send(bytes(answer, 'utf-8'))
+            elif data == "deposit":
+                if current_account.getUsername() == "":
+                    conn.send(bytes("Error! Not connected to an account", 'utf-8'))
+                else:
+                    conn.send(bytes("Enter pin", 'utf-8'))
+                    pin = conn.recv(1024).decode('utf-8')
+                    if pin.isdigit() and current_account.check_pin(int(pin)):
+                        conn.send(bytes("Enter amount to deposit", 'utf-8'))
+                        to_deposit = conn.recv(1024).decode('utf-8')
+                        if to_deposit.isdigit():
+                            answer = deposit(current_account.get_balance(), float(to_deposit), current_account)
+                        else:
+                            answer = "Oops, Invalid input"
+                        conn.send(bytes(answer, 'utf-8'))
+                    else:
+                        conn.send(bytes("Oops, Incorrect pin!", 'utf-8'))
+            elif data.lower() == "withdraw":
+                if current_account.getUsername() == "":
+                    conn.send(bytes("Error! Not connected to an account", 'utf-8'))
+                else:
+                    conn.send(bytes("Enter pin", 'utf-8'))
+                    pin = conn.recv(1024).decode('utf-8')
+                    if pin.isdigit() and current_account.check_pin(int(pin)):
+                        conn.send(bytes("Enter amount to withdraw", 'utf-8'))
+                        to_withdraw = conn.recv(1024).decode('utf-8')
+                        if to_withdraw.isdigit():
+                            answer = withdraw(current_account.get_balance(), float(to_withdraw), current_account)
+                        else:
+                            answer = "Oops, Invalid input"
+                        conn.send(bytes(answer, 'utf-8'))
+                    else:
+                        conn.send(bytes("Oops, Incorrect pin!", 'utf-8'))
+            elif data.lower() == "balance":
+                conn.send(bytes(str(current_account.get_balance()[2]), 'utf-8'))
+            elif data.lower() == "disconnect":
+                if current_account.getUsername() == "":
+                    conn.send(bytes("Error! Not connected to an account", 'utf-8'))
+                else:
+                    print(current_account.disconnect())
+                    conn.send(bytes("close", 'utf-8'))
             else:
-                print(current_account.disconnect())
-                conn.send(bytes("close", 'utf-8'))
-        else:
-            conn.send(bytes("Command not found", 'utf-8'))
-
+                conn.send(bytes("Command not found", 'utf-8'))
+    except ConnectionResetError:
+        current_account.disconnect()
 
 
 
@@ -237,8 +234,8 @@ def Handle_Client(conn, address):
 
 # The function receives a connection, address and the index in all_connections,
 # the function open a thread for each client
-def openThread(conn, address, index):
-    t = threading.Thread(target=Handle_Client, args=(conn, address, ))
+def openThread(conn):
+    t = threading.Thread(target=Handle_Client, args=(conn, ))
     t.start()
 
 # The function receives server socket and accept clients, add each client's info to a list(all_connection,
@@ -250,7 +247,7 @@ def accept_clients(server_socket):
         all_connections.append(conn)
         all_addresses.append(address)
         print(address[0], "Has connected")
-        openThread(conn, address, len(all_connections)-1)
+        openThread(conn)
 
 
 def Open_server():
