@@ -1,3 +1,24 @@
+#6
+class DecoratorCache(dict):
+    def __init__(self, name):
+        self.func_name = name
+
+    def __call__(self, *args):
+        return self[args]
+
+    def __missing__(self, key):
+        result = self[key] = self.func_name(*key)
+        return result
+
+
+@DecoratorCache
+def sumDigits(num):
+    # Function gets an integer number
+    # Function returns the sum of digits of the number
+    if num > 0:
+        return int(num % 10) + sumDigits(int(num / 10))
+    return 0
+
 #1
 def ex1a():
     # Function returns the sum of the input numbers
@@ -94,12 +115,26 @@ def ex4(id):
         return("Invalid input")
 
 
+def ex5(value):
+    # Function gets a number
+    # Function returns the sqrt of the number
+    return value ** 0.5
+
+
+def map_function(array, function_name):
+    return [function_name(val) for val in array]
+
+
 def main():
-     ex1a()
-     ex1b()
-     ex2([[1, 2, 0], [2, 1, 0], [2, 1, 1]])
-     print(ex3("aabbbbcdddeaaaaabbcb"))
-     print(ex4("543700421"))
+    ex1a()
+    ex1b()
+    ex2([[1, 2, 0], [2, 1, 0], [2, 1, 1]])
+    print(ex3("aabbbbcdddeaaaaabbcb"))
+    print(ex4("543700421"))
+    print(map_function([2, 4, 9], ex5))
+    print("Sum digits: ", sumDigits(145321503))
+    print("Cache: ", sumDigits)
+
 
 if __name__ == "__main__":
     main()
